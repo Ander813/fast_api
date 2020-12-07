@@ -9,7 +9,7 @@ app = FastAPI()
 
 app.include_router(records.router,
                    prefix="/items",
-                   tags=["items"])
+                   tags=["records"])
 app.include_router(websocket.router,
                    tags=["websocket"])
 
