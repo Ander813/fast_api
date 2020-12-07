@@ -8,6 +8,6 @@ async def init():
         db_url='sqlite://db.sqlite3',
         modules={'models': ['models.records']}
     )
-    #await Tortoise.generate_schemas()
+    await Tortoise.generate_schemas()
 
 run_async(init())

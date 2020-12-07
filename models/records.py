@@ -12,4 +12,5 @@ class Record(Model):
     edit_date = fields.DatetimeField(auto_now=True)
 
 
-RecordSchema = pydantic_model_creator(Record, name='record')
+RecordOut = pydantic_model_creator(Record, name='record_in')
+RecordIn = pydantic_model_creator(Record, name='record_out', exclude_readonly=True)
