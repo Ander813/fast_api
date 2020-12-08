@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from tortoise.contrib.fastapi import HTTPNotFoundError
 
-from models.records import RecordIn, RecordOut
+from schemas.records import RecordIn, RecordOut
 from models.records import Record
 
 router = APIRouter()
