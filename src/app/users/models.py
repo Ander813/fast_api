@@ -1,5 +1,8 @@
+from passlib.context import CryptContext
 from tortoise import Model, fields
-import settings
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class User(Model):
@@ -10,7 +13,7 @@ class User(Model):
     activated = fields.BooleanField(default=False)
 
     def check_password(self, password: str) -> bool:
-        return settings.pwd_context.verify(password, self.hashed_password)
+        return pwd_context.verify(password, self.hashed_password)
 
     @classmethod
     async def create_user(cls, username, email, password, activated=False) -> 'User':
@@ -22,4 +25,4 @@ class User(Model):
         return user
 
     def set_password(self, password: str):
-        self.hashed_password = settings.pwd_context.hash(password)
+        self.hashed_password = pwd_context.hash(password)

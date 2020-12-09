@@ -1,6 +1,6 @@
 from pydantic import validator
 import re
-from models.users import User
+from src.app.users.models import User
 from tortoise.contrib.pydantic import PydanticModel
 
 
