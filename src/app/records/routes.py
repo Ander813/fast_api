@@ -24,8 +24,13 @@ async def create_record(record: RecordIn):
     return await records_s.create(record)
 
 
+@router.put('/{pk}',
+            responses={404: {"Description": "not found"}})
+async def update_record(pk: int, record: RecordIn):
+    return await records_s.update(record, id=pk)
+
+
 @router.delete('/{pk}',
-               status_code=204,
                responses={404: {'Description': 'not found'}})
 async def delete_record(pk: int):
     return await records_s.delete(id=pk)
