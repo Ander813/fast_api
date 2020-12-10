@@ -21,8 +21,8 @@ class BaseService:
         return await self.get_schema.from_tortoise_orm(obj)
 
     async def update(self, schema: UpdateSchemaType, **kwargs) -> GetSchemaType:
-        await self.model.filter(**kwargs).update(**schema.dict(exculde_unset=True))
-        return await self.get_schema.from_queryset_single(self.model.filter(**kwargs))
+        await self.model.filter(**kwargs).update(**schema.dict(exclude_unset=True))
+        return await self.get_schema.from_queryset(self.model.filter(**kwargs))
 
     async def delete(self, **kwargs):
         obj = await self.model.filter(**kwargs).delete()
