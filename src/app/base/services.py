@@ -16,11 +16,11 @@ class BaseService:
     update_schema: UpdateSchemaType
     get_schema: GetSchemaType
 
-    async def create(self, schema) -> GetSchemaType:
+    async def create(self, schema: CreateSchemaType) -> GetSchemaType:
         obj = await self.model.create(**schema.dict())
         return await self.get_schema.from_tortoise_orm(obj)
 
-    async def update(self, schema, **kwargs) -> GetSchemaType:
+    async def update(self, schema: UpdateSchemaType, **kwargs) -> GetSchemaType:
         await self.model.filter(**kwargs).update(**schema.dict(exculde_unset=True))
         return await self.get_schema.from_queryset_single(self.model.filter(**kwargs))
 
@@ -30,13 +30,13 @@ class BaseService:
             raise HTTPException(status_code=404, detail='object not found')
 
     async def get(self, **kwargs) -> GetSchemaType:
-        return await self.get_schema.from_query_single(self.model.get(**kwargs))
+        return await self.get_schema.from_queryset_single(self.model.get(**kwargs))
 
     async def all(self) -> GetSchemaType:
-        return await self.get_schema.from_query(self.model.all())
+        return await self.get_schema.from_queryset(self.model.all())
 
     async def filter(self, **kwargs) -> GetSchemaType:
-        return await self.get_schema.from_query(self.model.filter(**kwargs))
+        return await self.get_schema.from_queryset(self.model.filter(**kwargs))
 
     async def get_obj(self, **kwargs) -> ModelType:
         return await self.model.get_or_none(**kwargs)
