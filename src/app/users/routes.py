@@ -17,3 +17,10 @@ async def register(user: UserIn):
             response_model=list[UserOut])
 async def get_users_list():
     return await users_s.all()
+
+
+@router.delete('/{pk}',
+               status_code=204,
+               responses={404: {'Description': 'not found'}})
+async def delete_user(pk: int):
+    return await users_s.delete(id=pk)

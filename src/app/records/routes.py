@@ -22,3 +22,10 @@ async def get_record(id: int):
 @router.post('/', response_model=RecordOut, status_code=201)
 async def create_record(record: RecordIn):
     return await records_s.create(record)
+
+
+@router.delete('/{pk}',
+               status_code=204,
+               responses={404: {'Description': 'not found'}})
+async def delete_record(pk: int):
+    return await records_s.delete(id=pk)
