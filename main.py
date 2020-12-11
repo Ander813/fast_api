@@ -7,7 +7,7 @@ app = FastAPI()
 
 
 app.include_router(main_router,
-                   prefix="/v1")
+                   prefix="/api/v1")
 
 register_tortoise(
     app=app,
