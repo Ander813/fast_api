@@ -1,8 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Depends
 from tortoise.contrib.fastapi import HTTPNotFoundError
 
+from src.app.auth.permissions import get_current_user
+from src.app.base.schemas import Msg
 from src.app.records.schemas import RecordOut, RecordIn
 from src.app.records.services import records_s
+from src.app.users.models import User
 
 router = APIRouter()
 
@@ -19,18 +22,27 @@ async def get_record(id: int):
     return await records_s.get(id=id)
 
 
-@router.post('/', response_model=RecordOut, status_code=201)
-async def create_record(record: RecordIn):
+@router.post('/',
+             response_model=RecordOut,
+             status_code=201)
+async def create_record(record: RecordIn,
+                        user: User = Depends(get_current_user)):
     return await records_s.create(record)
 
 
 @router.put('/{pk}',
             responses={404: {"Description": "not found"}})
-async def update_record(pk: int, record: RecordIn):
+async def update_record(pk: int, record: RecordIn,
+                        user: User = Depends(get_current_user)):
     return await records_s.update(record, id=pk)
 
 
 @router.delete('/{pk}',
+               response_model=Msg,
                responses={404: {'Description': 'not found'}})
-async def delete_record(pk: int):
-    return await records_s.delete(id=pk)
+async def delete_record(pk: int,
+                        user: User = Depends(get_current_user)):
+    if await records_s.delete(id=pk):
+        return {'msg': 'deleted'}
+    else:
+        raise HTTPException(status_code=404, detail='object not found')
