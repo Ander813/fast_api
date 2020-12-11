@@ -7,12 +7,12 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class User(Model):
     id = fields.IntField(pk=True)
-    username = fields.TextField()
+    username = fields.CharField(max_length=100, unique=True)
     email = fields.CharField(max_length=100, unique=True)
     hashed_password = fields.CharField(max_length=50)
     activated = fields.BooleanField(default=False)
 
-    def check_password(self, password: str) -> bool:
+    def verify_password(self, password: str) -> bool:
         return pwd_context.verify(password, self.hashed_password)
 
     @classmethod
