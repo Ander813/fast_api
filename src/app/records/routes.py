@@ -1,8 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
 from tortoise.contrib.fastapi import HTTPNotFoundError
 
+from fastapi_pagination import Page, pagination_params
+from fastapi_pagination.ext.tortoise import paginate
+
 from src.app.auth.permissions import get_current_user
 from src.app.base.schemas import Msg
+from .models import Record
 from src.app.records.schemas import RecordOut, RecordIn
 from src.app.records.services import records_s
 from src.app.users.models import User
@@ -10,9 +14,9 @@ from src.app.users.models import User
 router = APIRouter()
 
 
-@router.get('/', response_model=list[RecordOut])
+@router.get('/', response_model=Page[RecordOut], dependencies=[Depends(pagination_params)])
 async def get_records():
-    return await records_s.all()
+    return await paginate(Record)
 
 
 @router.get('/{id}',
