@@ -1,12 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
+from starlette.requests import Request
 from tortoise.exceptions import IntegrityError
 
 from src.app.auth.jwt import create_token
 from src.app.auth.schemas import Token
+from src.app.auth.social_auth import oauth
 from src.app.base.schemas import Msg
 from src.app.users.schemas import UserIn
 from src.app.users.services import users_s
+
 
 router = APIRouter()
 
@@ -30,3 +33,27 @@ async def user_token_login(form_data: OAuth2PasswordRequestForm = Depends()):
     if not user:
         raise HTTPException(status_code=400, detail='Incorrect username or password')
     return create_token(user.email)
+
+
+@router.get('/login/vk')
+async def vk_login(request: Request):
+    redirect_uri = request.url_for('vk_auth')
+    return await oauth.vk.authorize_redirect(request, redirect_uri)
+
+
+@router.get('/vk')
+async def vk_auth(request: Request):
+    token = await oauth.vk.authorize_access_token(request, method='GET')
+    user = await oauth.vk.parse_id_token(request, token)
+
+
+@router.get('/login/git')
+async def git_login(request: Request):
+    redirect_uri = request.url_for('git_auth')
+    return await oauth.github.authorize_redirect(request, redirect_uri)
+
+
+@router.get('/git')
+async def git_auth(request: Request):
+    token = await oauth.github.authorize_access_token(request)
+    return token
