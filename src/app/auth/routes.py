@@ -3,9 +3,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from starlette.requests import Request
 from tortoise.exceptions import IntegrityError
 
-from src.app.auth.jwt import create_token
-from src.app.auth.schemas import Token
-from src.app.auth.social_auth import oauth
+from .jwt import create_token
+from .schemas import Token
+from .social_auth.social_auth import oauth
+from .social_auth import utils
 from src.app.base.schemas import Msg
 from src.app.users.schemas import UserIn
 from src.app.users.services import users_s
@@ -56,4 +57,6 @@ async def git_login(request: Request):
 @router.get('/git')
 async def git_auth(request: Request):
     token = await oauth.github.authorize_access_token(request)
-    return token
+    emails = (await oauth.github.get('https://api.github.com/user/emails', request=request)).json()
+    email = utils.get_git_primary_email(emails)
+    return create_token(email, token['access_token'])
