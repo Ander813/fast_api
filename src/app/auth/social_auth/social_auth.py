@@ -1,9 +1,19 @@
 from authlib.integrations.starlette_client import OAuth
+from authlib.oauth2.rfc6749 import OAuth2Token
+from starlette.requests import Request
 
 from src.conf import settings
 
 
-oauth = OAuth()
+async def fetch_token(name, request: Request):
+    token = request.session.get('token', None)
+    if token:
+        token = OAuth2Token.from_dict(token)
+
+    return token
+
+
+oauth = OAuth(fetch_token=fetch_token)
 
 oauth.register(
     name='vk',
@@ -18,5 +28,6 @@ oauth.register(
     client_secret=settings.CLIENT_SECRET_GITHUB,
     authorize_url='https://github.com/login/oauth/authorize',
     access_token_url='https://github.com/login/oauth/access_token',
-    client_kwargs={'scope': 'read:user, user:email'}
+    client_kwargs={'scope': 'read:user, user:email'},
+    userinfo_endpoint='https://api.github.com/user'
 )
