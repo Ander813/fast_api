@@ -7,11 +7,15 @@ ALGORITHM = "HS256"
 access_token_subject = 'access'
 
 
-def create_token(email: str):
+def create_token(email: str, oauth_token: str = None):
+    if oauth_token:
+        data = {'email': email, 'token': oauth_token}
+    else:
+        data = {'email': email}
     access_token_expire = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         'access_token': create_access_token(
-            data={'email': email},
+            data=data,
             expire_delta=access_token_expire
         ),
         'token_type': 'bearer',
