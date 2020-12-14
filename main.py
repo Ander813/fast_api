@@ -13,7 +13,7 @@ app.include_router(main_router,
 register_tortoise(
     app=app,
     modules={'models': settings.APPS_MODELS},
-    db_url='sqlite://db.sqlite3',
+    db_url=settings.DB_URI,
     generate_schemas=True,
     add_exception_handlers=True
 )
