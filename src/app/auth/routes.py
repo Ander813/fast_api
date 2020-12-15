@@ -8,7 +8,7 @@ from .schemas import Token
 from .social_auth.social_auth import oauth
 from .social_auth import utils
 from src.app.base.schemas import Msg
-from src.app.users.schemas import UserIn
+from src.app.users.schemas import UserIn, UserInSocial
 from src.app.users.services import users_s
 
 
@@ -20,7 +20,7 @@ router = APIRouter()
              responses={400: {'Description': 'bad request'}})
 async def user_registration(user: UserIn):
     try:
-        user = await users_s.create_user(user)
+        await users_s.create(user)
     except IntegrityError:
         raise HTTPException(status_code=400,
                             detail='User with such email address already exists')
@@ -59,4 +59,7 @@ async def git_auth(request: Request):
     token = await oauth.github.authorize_access_token(request)
     emails = (await oauth.github.get('https://api.github.com/user/emails', request=request)).json()
     email = utils.get_git_primary_email(emails)
-    return create_token(email, token['access_token'])
+    user, _ = await users_s.get_or_create_social(email=email,
+                                                 defaults=UserInSocial(email=email,
+                                                                       username=email))
+    return create_token(user.email, token)
