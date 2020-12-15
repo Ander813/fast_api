@@ -25,6 +25,13 @@ class User(Model):
         await user.save()
         return user
 
+    @classmethod
+    async def create_social_user(cls, username, email):
+        user = cls(username=username, email=email, activated=True)
+        user.set_unusable_password()
+        await user.save()
+        return user
+
     def set_password(self, password: str) -> None:
         self.hashed_password = pwd_context.hash(password)
 

@@ -21,3 +21,6 @@ class UserIn(BaseUserModel):
 class UserOut(BaseUserModel):
     pass
 
+
+class UserInSocial(BaseUserModel):
+    pass

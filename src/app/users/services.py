@@ -11,11 +11,25 @@ class UsersService(BaseService):
     update_schema = schemas.UserIn
     get_schema = schemas.UserOut
 
-    async def create_user(self, schema):
+    async def create(self, schema):
         user_obj = await self.model.create_user(**schema.dict())
         return await self.get_schema.from_tortoise_orm(user_obj)
 
-    async
+    async def get_or_create(self, defaults, **kwargs):
+        user_obj = await self.model.filter(**kwargs).first()
+        if user_obj:
+            return await self.get_schema.from_tortoise_orm(user_obj), False
+        return await self.create(defaults), True
+
+    async def create_social(self, schema):
+        user_obj = await self.model.create_social_user(**schema.dict())
+        return await self.get_schema.from_tortoise_orm(user_obj)
+
+    async def get_or_create_social(self, defaults, **kwargs):
+        user_obj = await self.model.filter(**kwargs).first()
+        if user_obj:
+            return await self.get_schema.from_tortoise_orm(user_obj), False
+        return await self.create_social(defaults), True
 
     async def authenticate(self, username: str, password: str) -> Union[User, None]:
         user = await self.model.get(username=username)
