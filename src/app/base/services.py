@@ -2,7 +2,7 @@ from typing import TypeVar, Type
 
 from pydantic import BaseModel
 from tortoise import Model
-from fastapi import HTTPException
+
 
 ModelType = TypeVar('ModelType', bound=Model)
 CreateSchemaType = TypeVar('CreateSchemaType', bound=BaseModel)
@@ -40,5 +40,5 @@ class BaseService:
     async def get_obj(self, **kwargs) -> ModelType:
         return await self.model.get_or_none(**kwargs)
 
-    async def get_or_create(self, defaults: dict=None, **kwargs) -> GetSchemaType:
-        return await self.model.get_or_create(**kwargs, defaults=defaults)
+    async def get_or_create(self, defaults: CreateSchemaType, **kwargs) -> GetSchemaType:
+        return await self.model.get_or_create(**kwargs, defaults=defaults.dict())
