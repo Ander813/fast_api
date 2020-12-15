@@ -15,6 +15,8 @@ class UsersService(BaseService):
         user_obj = await self.model.create_user(**schema.dict())
         return await self.get_schema.from_tortoise_orm(user_obj)
 
+    async
+
     async def authenticate(self, username: str, password: str) -> Union[User, None]:
         user = await self.model.get(username=username)
         if not user:
