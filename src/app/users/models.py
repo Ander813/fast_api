@@ -12,6 +12,13 @@ class User(Model):
     email = fields.CharField(max_length=100, unique=True)
     hashed_password = fields.CharField(max_length=50)
     activated = fields.BooleanField(default=False)
+    superuser = fields.BooleanField(default=False)
+
+    @property
+    def is_superuser(self):
+        if self.superuser:
+            return True
+        return False
 
     def verify_password(self, password: str) -> bool:
         return pwd_context.verify(password, self.hashed_password)
