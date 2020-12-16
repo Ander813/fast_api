@@ -45,7 +45,10 @@ async def vk_login(request: Request):
 @router.get('/vk')
 async def vk_auth(request: Request):
     token = await oauth.vk.authorize_access_token(request, method='GET')
-    user = await oauth.vk.parse_id_token(request, token)
+    user, _ = await users_s.get_or_create_social(email=token['email'],
+                                                 defaults=UserInSocial(email=token['email'],
+                                                                       username=token['email']))
+    return create_token(user.email, token)
 
 
 @router.get('/login/git')

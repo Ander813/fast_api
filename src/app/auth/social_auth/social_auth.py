@@ -1,6 +1,7 @@
 from authlib.integrations.starlette_client import OAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
 from starlette.requests import Request
+from .vk import vk_fix, slack_compliance_fix
 
 from src.conf import settings
 
@@ -21,7 +22,10 @@ oauth.register(
     client_secret=settings.CLIENT_SECRET_VK,
     authorize_url='https://oauth.vk.com/authorize',
     access_token_url='https://oauth.vk.com/access_token',
+    client_kwargs={'scope': 'email'},
+    token_endpoint_auth_method='none'
 )
+
 oauth.register(
     name='github',
     client_id=settings.CLIENT_ID_GITHUB,
