@@ -29,7 +29,7 @@ API_V1_STR = 'api/v1'
 
 
 #DB
-DB_URI = 'sqlite://db.sqlite3'
+DB_URI = os.environ.get('DB_URI')
 APPS_MODELS = ['src.app.records.models',
                'src.app.users.models',
                'aerich.models']
