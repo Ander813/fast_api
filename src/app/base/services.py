@@ -16,8 +16,8 @@ class BaseService:
     update_schema: UpdateSchemaType
     get_schema: GetSchemaType
 
-    async def create(self, schema: CreateSchemaType) -> GetSchemaType:
-        obj = await self.model.create(**schema.dict())
+    async def create(self, schema: CreateSchemaType, **kwargs) -> GetSchemaType:
+        obj = await self.model.create(**schema.dict(), **kwargs)
         return await self.get_schema.from_tortoise_orm(obj)
 
     async def update(self, schema: UpdateSchemaType, **kwargs) -> GetSchemaType:
