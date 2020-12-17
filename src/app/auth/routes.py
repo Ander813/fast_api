@@ -46,8 +46,7 @@ async def vk_login(request: Request):
 async def vk_auth(request: Request):
     token = await oauth.vk.authorize_access_token(request, method='GET')
     user, _ = await users_s.get_or_create_social(email=token['email'],
-                                                 defaults=UserInSocial(email=token['email'],
-                                                                       username=token['email']))
+                                                 defaults=UserInSocial(email=token['email']))
     return create_token(user.email, token)
 
 
@@ -63,6 +62,5 @@ async def git_auth(request: Request):
     emails = (await oauth.github.get('https://api.github.com/user/emails', request=request)).json()
     email = utils.get_git_primary_email(emails)
     user, _ = await users_s.get_or_create_social(email=email,
-                                                 defaults=UserInSocial(email=email,
-                                                                       username=email))
+                                                 defaults=UserInSocial(email=email))
     return create_token(user.email, token)

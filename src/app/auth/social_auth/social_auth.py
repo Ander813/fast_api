@@ -1,7 +1,6 @@
 from authlib.integrations.starlette_client import OAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
 from starlette.requests import Request
-from .vk import vk_fix, slack_compliance_fix
 
 from src.conf import settings
 
