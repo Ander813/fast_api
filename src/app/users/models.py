@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-from tortoise import Model, fields
+from tortoise import Model, fields, Tortoise
 from src.app.base import utils, secrets
 
 
@@ -8,9 +8,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class User(Model):
     id = fields.IntField(pk=True)
-    username = fields.CharField(max_length=100, unique=True)
     email = fields.CharField(max_length=100, unique=True)
-    hashed_password = fields.CharField(max_length=50)
+    hashed_password = fields.CharField(max_length=100)
     activated = fields.BooleanField(default=False)
     superuser = fields.BooleanField(default=False)
 
@@ -24,8 +23,8 @@ class User(Model):
         return pwd_context.verify(password, self.hashed_password)
 
     @classmethod
-    async def create_user(cls, username, email, password, activated=False) -> 'User':
-        user = cls(username=username, email=email)
+    async def create_user(cls, email, password, activated=False) -> 'User':
+        user = cls(email=email)
         if activated:
             user.activated = activated
         user.set_password(password)
@@ -33,8 +32,8 @@ class User(Model):
         return user
 
     @classmethod
-    async def create_social_user(cls, username, email):
-        user = cls(username=username, email=email, activated=True)
+    async def create_social_user(cls, email):
+        user = cls(email=email, activated=True)
         user.set_unusable_password()
         await user.save()
         return user

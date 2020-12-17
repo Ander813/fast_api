@@ -31,8 +31,8 @@ class UsersService(BaseService):
             return await self.get_schema.from_tortoise_orm(user_obj), False
         return await self.create_social(defaults), True
 
-    async def authenticate(self, username: str, password: str) -> Union[User, None]:
-        user = await self.model.get(username=username)
+    async def authenticate(self, email: str, password: str) -> Union[User, None]:
+        user = await self.model.get(email=email)
         if not user:
             return None
         if not user.verify_password(password):

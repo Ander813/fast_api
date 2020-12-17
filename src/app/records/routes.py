@@ -31,7 +31,7 @@ async def get_record(id: int):
              status_code=201)
 async def create_record(record: RecordIn,
                         user: User = Depends(get_current_user)):
-    return await records_s.create(record)
+    return await records_s.create(record, creator_id=user.id)
 
 
 @router.put('/{pk}',

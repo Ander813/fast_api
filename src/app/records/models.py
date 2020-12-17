@@ -9,3 +9,7 @@ class Record(Model):
     is_important = fields.BooleanField(default=False)
     create_date = fields.DatetimeField(auto_now_add=True)
     edit_date = fields.DatetimeField(auto_now=True)
+    creator = fields.ForeignKeyField('models.User', related_name='records')
+
+    class Meta:
+        ordering = ['-edit_date']
