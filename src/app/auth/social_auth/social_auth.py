@@ -26,7 +26,6 @@ oauth.register(
                    'token_endpoint_auth_method': 'vk_get'},
     client_auth_methods=[('vk_get', client_secret_get)]
 )
-#oauth.vk.register_client_auth_method(client_secret_get)
 
 oauth.register(
     name='github',
