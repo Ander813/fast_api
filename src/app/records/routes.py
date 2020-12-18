@@ -15,15 +15,16 @@ router = APIRouter()
 
 
 @router.get('/', response_model=Page[RecordOut], dependencies=[Depends(pagination_params)])
-async def get_records():
-    return await paginate(Record)
+async def get_records(user: User = Depends(get_current_user)):
+    queryset = Record.filter(creator_id=user.id)
+    return await paginate(queryset)
 
 
 @router.get('/{id}',
             response_model=RecordOut,
             responses={404: {"model": HTTPNotFoundError}})
-async def get_record(id: int):
-    return await records_s.get(id=id)
+async def get_record(id: int, user: User = Depends(get_current_user)):
+    return await records_s.get(id=id, creator_id=user.id)
 
 
 @router.post('/',
@@ -38,7 +39,7 @@ async def create_record(record: RecordIn,
             responses={404: {"Description": "not found"}})
 async def update_record(pk: int, record: RecordIn,
                         user: User = Depends(get_current_user)):
-    return await records_s.update(record, id=pk)
+    return await records_s.update(record, id=pk, creator_id=user.id)
 
 
 @router.delete('/{pk}',
@@ -46,7 +47,7 @@ async def update_record(pk: int, record: RecordIn,
                responses={404: {'Description': 'not found'}})
 async def delete_record(pk: int,
                         user: User = Depends(get_current_user)):
-    if await records_s.delete(id=pk):
+    if await records_s.delete(id=pk, creator_id=user.id):
         return {'msg': 'deleted'}
     else:
         raise HTTPException(status_code=404, detail='object not found')
