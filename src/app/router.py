@@ -9,9 +9,6 @@ main_router.include_router(records_routes.router,
                            prefix="/records",
                            tags=["records"])
 
-main_router.include_router(users_routes.router,
-                           prefix="/users",
-                           tags=["users"])
 
 main_router.include_router(auth_routes.router,
                            prefix='/auth',
