@@ -1,29 +1,33 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi_pagination.params import resolve_params
 from tortoise.contrib.fastapi import HTTPNotFoundError
 
 from fastapi_pagination import Page, pagination_params
-from fastapi_pagination.ext.tortoise import paginate
 
 from src.app.auth.permissions import get_superuser
 from src.app.base.schemas import Msg
 from .models import Record
-from src.app.records.schemas import RecordOut, RecordIn
-from src.app.records.services import records_s
+from src.app.records.schemas import RecordOut, RecordIn, RecordOutAdmin
+from src.app.records.services import records_s_admin
 from src.app.users.models import User
 
 admin_router = APIRouter()
 
 
-@admin_router.get('/', response_model=Page[RecordOut], dependencies=[Depends(pagination_params)])
+@admin_router.get('/', response_model=Page[RecordOutAdmin], dependencies=[Depends(pagination_params)])
 async def get_records(user: User = Depends(get_superuser)):
-    return await paginate(Record)
+    params = resolve_params(None)
+    limit_offset = params.to_limit_offset()
+    return Page.create(items=await records_s_admin.get_slice(limit_offset.offset, limit_offset.limit),
+                       total=await Record.all().count(),
+                       params=params)
 
 
 @admin_router.get('/{id}',
                   response_model=RecordOut,
                   responses={404: {"model": HTTPNotFoundError}})
 async def get_record(id: int, user: User = Depends(get_superuser)):
-    return await records_s.get(id=id)
+    return await records_s_admin.get(id=id)
 
 
 @admin_router.post('/',
@@ -31,14 +35,14 @@ async def get_record(id: int, user: User = Depends(get_superuser)):
                    status_code=201)
 async def create_record(record: RecordIn,
                         user: User = Depends(get_superuser)):
-    return await records_s.create(record, creator_id=user.id)
+    return await records_s_admin.create(record, creator_id=user.id)
 
 
 @admin_router.put('/{pk}',
                   responses={404: {"Description": "not found"}})
 async def update_record(pk: int, record: RecordIn,
                         user: User = Depends(get_superuser)):
-    return await records_s.update(record, id=pk)
+    return await records_s_admin.update(record, id=pk)
 
 
 @admin_router.delete('/{pk}',
@@ -46,7 +50,7 @@ async def update_record(pk: int, record: RecordIn,
                      responses={404: {'Description': 'not found'}})
 async def delete_record(pk: int,
                         user: User = Depends(get_superuser)):
-    if await records_s.delete(id=pk):
+    if await records_s_admin.delete(id=pk):
         return {'msg': 'deleted'}
     else:
         raise HTTPException(status_code=404, detail='object not found')

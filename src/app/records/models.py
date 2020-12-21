@@ -1,5 +1,5 @@
 from tortoise.models import Model
-from tortoise import fields
+from tortoise import fields, Tortoise
 
 
 class Record(Model):
@@ -13,3 +13,6 @@ class Record(Model):
 
     class Meta:
         ordering = ['-edit_date']
+
+
+Tortoise.init_models(['src.app.users.models', 'src.app.records.models'], 'models')

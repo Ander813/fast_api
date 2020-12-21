@@ -5,10 +5,13 @@ from . import schemas
 from .models import Record
 
 
-class RecordsService(BaseService):
+class BaseRecordService(BaseService):
     model = Record
     create_schema = schemas.RecordIn
     update_schema = schemas.RecordIn
+
+
+class RecordsService(BaseRecordService):
     get_schema = schemas.RecordOut
 
     async def update(self, schema, **kwargs):
@@ -17,6 +20,11 @@ class RecordsService(BaseService):
         return await self.get_schema.from_queryset(self.model.filter(**kwargs))
 
 
+class RecordsServiceAdmin(BaseRecordService):
+    get_schema = schemas.RecordOutAdmin
+
+
 records_s = RecordsService()
+records_s_admin = RecordsServiceAdmin()
 
 
