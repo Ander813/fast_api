@@ -2,12 +2,16 @@ from typing import TypeVar, Type
 
 from pydantic import BaseModel
 from tortoise import Model
+from tortoise.exceptions import FieldError
+
+from .filters import BaseFilter
 
 
 ModelType = TypeVar('ModelType', bound=Model)
 CreateSchemaType = TypeVar('CreateSchemaType', bound=BaseModel)
 UpdateSchemaType = TypeVar('UpdateSchemaType', bound=BaseModel)
 GetSchemaType = TypeVar('GetSchemaType', bound=BaseModel)
+FilterType = TypeVar('FilterType', bound=BaseFilter)
 
 
 class BaseService:
@@ -47,3 +51,28 @@ class BaseService:
         queryset = self.model.all()
         items = queryset.offset(page * size).limit(size).all()
         return await self.get_schema.from_queryset(items)
+
+    async def filter_queryset(self, filter_obj: FilterType = None, **kwargs):
+        if filter_obj:
+            params = filter_obj.dict()
+            if 'order' in params:
+                order = params.pop('order')
+                try:
+                    return self.model.filter(**params).order_by(order)
+                except FieldError:
+                    return None
+            try:
+                return self.model.filter(**params)
+            except FieldError:
+                return None
+
+        if 'order' in kwargs:
+            order = kwargs.pop('order')
+            try:
+                return self.model.filter(**kwargs).order_by(order)
+            except FieldError:
+                return None
+        try:
+            return self.model.filter(**kwargs)
+        except FieldError:
+            return None

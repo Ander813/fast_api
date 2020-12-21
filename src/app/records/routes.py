@@ -6,17 +6,19 @@ from fastapi_pagination.ext.tortoise import paginate
 
 from src.app.auth.permissions import get_current_user
 from src.app.base.schemas import Msg
+from .filters import RecordFilter
 from .models import Record
-from src.app.records.schemas import RecordOut, RecordIn
-from src.app.records.services import records_s
+from .schemas import RecordOut, RecordIn
+from .services import records_s
 from src.app.users.models import User
 
 router = APIRouter()
 
 
 @router.get('/', response_model=Page[RecordOut], dependencies=[Depends(pagination_params)])
-async def get_records(user: User = Depends(get_current_user)):
-    queryset = Record.filter(creator_id=user.id)
+async def get_records(user: User = Depends(get_current_user),
+                      filter_params: RecordFilter = Depends()):
+    queryset = await records_s.filter_queryset(filter_params)
     return await paginate(queryset)
 
 
