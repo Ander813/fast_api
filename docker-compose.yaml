@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  back:
+    container_name: simple_diary_back
+    build:
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    command: uvicorn main:app --reload --port 80 --host ${HOST_ADDR}
+    ports:
+      - 80:80
+    restart: always
+
+

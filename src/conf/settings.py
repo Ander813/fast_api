@@ -1,8 +1,5 @@
 import os
-from set_config import set_config
 
-
-set_config()
 
 SECRET_KEY = "09d25e094faa6ca2336c91816dbea9563b93f7f99f6f0f4caa6cf63b88e8d3e7"
 
