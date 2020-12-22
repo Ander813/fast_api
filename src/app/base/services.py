@@ -4,8 +4,7 @@ from pydantic import BaseModel
 from tortoise import Model
 from tortoise.exceptions import FieldError
 
-from .filters import BaseFilter
-
+from .filters import BaseFilter, get_filter_order_params
 
 ModelType = TypeVar('ModelType', bound=Model)
 CreateSchemaType = TypeVar('CreateSchemaType', bound=BaseModel)
@@ -53,26 +52,14 @@ class BaseService:
         return await self.get_schema.from_queryset(items)
 
     async def filter_queryset(self, filter_obj: FilterType = None, **kwargs):
-        if filter_obj:
-            params = filter_obj.dict()
-            if 'order' in params:
-                order = params.pop('order')
-                try:
-                    return self.model.filter(**params).order_by(order)
-                except FieldError:
-                    return None
+        params, order = get_filter_order_params(filter_obj, kwargs)
+        print(params)
+        if order:
             try:
-                return self.model.filter(**params)
-            except FieldError:
-                return None
-
-        if 'order' in kwargs:
-            order = kwargs.pop('order')
-            try:
-                return self.model.filter(**kwargs).order_by(order)
+                return self.model.filter(**params).order_by(order)
             except FieldError:
                 return None
         try:
-            return self.model.filter(**kwargs)
+            return self.model.filter(params)
         except FieldError:
             return None

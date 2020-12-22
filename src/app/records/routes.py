@@ -18,7 +18,7 @@ router = APIRouter()
 @router.get('/', response_model=Page[RecordOut], dependencies=[Depends(pagination_params)])
 async def get_records(user: User = Depends(get_current_user),
                       filter_params: RecordFilter = Depends()):
-    queryset = await records_s.filter_queryset(filter_params)
+    queryset = await records_s.filter_queryset(filter_params, creator_id=user.id)
     return await paginate(queryset)
 
 
