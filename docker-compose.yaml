@@ -4,12 +4,14 @@ services:
   back:
     container_name: simple_diary_back
     build:
+      context: ./
       dockerfile: Dockerfile
+      target: dev
     env_file:
       - .env
-    command: uvicorn main:app --reload --port 80 --host ${HOST_ADDR}
+    command: uvicorn main:app --reload --port 80 --host 0.0.0.0
     ports:
-      - 80:80
+      - 8080:80
     restart: always
 
 
