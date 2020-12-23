@@ -3,5 +3,5 @@ from .models import Record
 
 
 RecordOut = pydantic_model_creator(Record, name='record_out', exclude=('creator', 'creator_id'))
-RecordIn = pydantic_model_creator(Record, name='record_in', exclude_readonly=True)
+RecordIn = pydantic_model_creator(Record, name='record_in', exclude_readonly=True, exclude=('creator_id',))
 RecordOutAdmin = pydantic_model_creator(Record, name='record_out_admin', exclude=('creator',))
