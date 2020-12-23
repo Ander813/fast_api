@@ -59,7 +59,9 @@ async def git_login(request: Request):
 @router.get('/git')
 async def git_auth(request: Request):
     token = await oauth.github.authorize_access_token(request)
-    emails = (await oauth.github.get('https://api.github.com/user/emails', request=request)).json()
+    request.session['token'] = token
+    emails = (await oauth.github.get('https://api.github.com/user/emails',
+                                     request=request)).json()
     email = utils.get_git_primary_email(emails)
     user, _ = await users_s.get_or_create_social(email=email,
                                                  defaults=UserInSocial(email=email))
