@@ -6,6 +6,7 @@ from fastapi_pagination import Page, pagination_params
 
 from src.app.auth.permissions import get_superuser
 from src.app.base.schemas import Msg
+from .filters import RecordAdminFilter
 from .models import Record
 from src.app.records.schemas import RecordOut, RecordIn, RecordOutAdmin
 from src.app.records.services import records_s_admin
@@ -15,10 +16,11 @@ admin_router = APIRouter()
 
 
 @admin_router.get('/', response_model=Page[RecordOutAdmin], dependencies=[Depends(pagination_params)])
-async def get_records(user: User = Depends(get_superuser)):
+async def get_records(user: User = Depends(get_superuser), filter: RecordAdminFilter = Depends()):
     params = resolve_params(None)
     limit_offset = params.to_limit_offset()
-    return Page.create(items=await records_s_admin.get_slice(limit_offset.offset, limit_offset.limit),
+    return Page.create(items=await records_s_admin.get_slice(
+        limit_offset.offset, limit_offset.limit, filter_obj=filter),
                        total=await Record.all().count(),
                        params=params)
 
