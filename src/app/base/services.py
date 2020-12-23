@@ -1,4 +1,4 @@
-from typing import TypeVar, Type
+from typing import TypeVar, Type, Union
 
 from pydantic import BaseModel
 from tortoise import Model
@@ -46,20 +46,22 @@ class BaseService:
     async def get_or_create(self, defaults: CreateSchemaType, **kwargs) -> GetSchemaType:
         return await self.model.get_or_create(**kwargs, defaults=defaults.dict())
 
-    async def get_slice(self, page=0, size=50):
-        queryset = self.model.all()
+    async def get_slice(self, page=0, size=50, filter_obj: FilterType = None, **kwargs):
+        if filter_obj:
+            queryset = await self.filter_queryset(filter_obj)
+        else:
+            queryset = self.model.all()
         items = queryset.offset(page * size).limit(size).all()
         return await self.get_schema.from_queryset(items)
 
-    async def filter_queryset(self, filter_obj: FilterType = None, **kwargs):
+    async def filter_queryset(self, filter_obj: FilterType, **kwargs):
         params, order = get_filter_order_params(filter_obj, kwargs)
-        print(params)
         if order:
             try:
                 return self.model.filter(**params).order_by(order)
             except FieldError:
                 return None
         try:
-            return self.model.filter(params)
+            return self.model.filter(**params)
         except FieldError:
             return None
