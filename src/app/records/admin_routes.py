@@ -8,8 +8,8 @@ from src.app.auth.permissions import get_superuser
 from src.app.base.schemas import Msg
 from .filters import RecordAdminFilter
 from .models import Record
-from src.app.records.schemas import RecordOut, RecordIn, RecordOutAdmin
-from src.app.records.services import records_s_admin
+from .schemas import RecordOut, RecordIn, RecordOutAdmin
+from .services import records_s_admin
 from src.app.users.models import User
 
 admin_router = APIRouter()
