@@ -58,3 +58,7 @@ class User(Model):
         if self.hashed_password.startswith(secrets.UNUSABLE_PASSWORD_PREFIX):
             return False
         return True
+
+    async def activate(self):
+        self.activated = True
+        await self.save()
