@@ -48,11 +48,14 @@ class BaseService:
 
     async def get_slice(self, page=0, size=50, filter_obj: FilterType = None, **kwargs):
         if filter_obj:
-            queryset = await self.filter_queryset(filter_obj)
+            queryset = await self.filter_queryset(filter_obj, **kwargs)
         else:
             queryset = self.model.all()
-        items = queryset.offset(page * size).limit(size).all()
-        return await self.get_schema.from_queryset(items)
+
+        if queryset is not None:
+            items = queryset.offset(page * size).limit(size).all()
+            return await self.get_schema.from_queryset(items)
+        return None
 
     async def filter_queryset(self, filter_obj: FilterType, **kwargs):
         params, order = get_filter_order_params(filter_obj, kwargs)
