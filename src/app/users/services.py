@@ -40,4 +40,11 @@ class UsersService(BaseService):
         return user
 
 
+class UsersServiceAdmin(UsersService):
+    get_schema = schemas.UserOutAdmin
+
+
 users_s = UsersService()
+users_s_admin = UsersServiceAdmin()
+
+

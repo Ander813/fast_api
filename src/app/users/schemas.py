@@ -21,3 +21,7 @@ class UserOut(BaseUserModel):
 
 class UserInSocial(BaseUserModel):
     pass
+
+
+class UserOutAdmin(BaseUserModel):
+    id: int

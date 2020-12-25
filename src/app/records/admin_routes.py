@@ -8,32 +8,38 @@ from src.app.auth.permissions import get_superuser
 from src.app.base.schemas import Msg
 from .filters import RecordAdminFilter
 from .models import Record
-from .schemas import RecordOut, RecordIn, RecordOutAdmin
+from .schemas import RecordOut, RecordIn, RecordOutAdmin, RecordInAdmin
 from .services import records_s_admin
 from src.app.users.models import User
 
 admin_router = APIRouter()
 
 
-@admin_router.get('/', response_model=Page[RecordOutAdmin], dependencies=[Depends(pagination_params)])
+@admin_router.get('/',
+                  response_model=Page[RecordOutAdmin],
+                  dependencies=[Depends(pagination_params)],
+                  responses={400: {'detail': 'Bad queryset'}})
 async def get_records(user: User = Depends(get_superuser), filter: RecordAdminFilter = Depends()):
     params = resolve_params(None)
     limit_offset = params.to_limit_offset()
-    return Page.create(items=await records_s_admin.get_slice(
-        limit_offset.offset, limit_offset.limit, filter_obj=filter),
-                       total=await Record.all().count(),
-                       params=params)
+    items = await records_s_admin.get_slice(
+        limit_offset.offset, limit_offset.limit, filter_obj=filter)
+    if items is not None:
+        return Page.create(items=items,
+                           total=await Record.all().count(),
+                           params=params)
+    raise HTTPException(status_code=400, detail='wrong parameters given')
 
 
 @admin_router.get('/{id}',
-                  response_model=RecordOut,
+                  response_model=RecordOutAdmin,
                   responses={404: {"model": HTTPNotFoundError}})
 async def get_record(id: int, user: User = Depends(get_superuser)):
     return await records_s_admin.get(id=id)
 
 
 @admin_router.post('/',
-                   response_model=RecordOut,
+                   response_model=RecordOutAdmin,
                    status_code=201)
 async def create_record(record: RecordIn,
                         user: User = Depends(get_superuser)):
@@ -42,7 +48,7 @@ async def create_record(record: RecordIn,
 
 @admin_router.put('/{pk}',
                   responses={404: {"Description": "not found"}})
-async def update_record(pk: int, record: RecordIn,
+async def update_record(pk: int, record: RecordInAdmin,
                         user: User = Depends(get_superuser)):
     return await records_s_admin.update(record, id=pk)
 

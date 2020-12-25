@@ -15,10 +15,15 @@ from src.app.users.models import User
 router = APIRouter()
 
 
-@router.get('/', response_model=Page[RecordOut], dependencies=[Depends(pagination_params)])
+@router.get('/',
+            response_model=Page[RecordOut],
+            dependencies=[Depends(pagination_params)],
+            responses={400: {'detail': 'Bad queryset'}})
 async def get_records(user: User = Depends(get_current_user),
                       filter_params: RecordFilter = Depends()):
     queryset = await records_s.filter_queryset(filter_params, creator_id=user.id)
+    if queryset is None:
+        raise HTTPException(status_code=400, detail='wrong parameters given')
     return await paginate(queryset)
 
 
@@ -38,7 +43,7 @@ async def create_record(record: RecordIn,
 
 
 @router.put('/{pk}',
-            responses={404: {"Description": "not found"}})
+            responses={404: {"description": "not found"}})
 async def update_record(pk: int, record: RecordIn,
                         user: User = Depends(get_current_user)):
     return await records_s.update(record, id=pk, creator_id=user.id)
@@ -46,7 +51,7 @@ async def update_record(pk: int, record: RecordIn,
 
 @router.delete('/{pk}',
                response_model=Msg,
-               responses={404: {'Description': 'not found'}})
+               responses={404: {'description': 'not found'}})
 async def delete_record(pk: int,
                         user: User = Depends(get_current_user)):
     if await records_s.delete(id=pk, creator_id=user.id):
