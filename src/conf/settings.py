@@ -58,6 +58,7 @@ EMAILS_ENABLED = SMTP_HOST and SMTP_PORT and EMAIL_HOST_USER and EMAIL_HOST_PASS
 
 EMAIL_TEMPLATES_DIR = 'src/templates/email-templates'
 EMAIL_CONFIRM_EXPIRE = 60 * 60 * 24 * 7 #sec min hour day
+PASSWORD_RESET_EXPIRE = 60 * 60 * 24 * 7 #sec min hour day
 
 #REDIS
 REDIS_HOST = os.environ.get('REDIS_HOST')

@@ -1,16 +1,22 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Body
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette.background import BackgroundTasks
 from starlette.requests import Request
 from starlette.responses import Response
 from tortoise.exceptions import IntegrityError
 
+from .email import redis_pop_email
 from .jwt import create_token, create_refresh_token
 from .permissions import get_current_user
 from .schemas import Token
 from .social_auth.social_auth import oauth
 from .social_auth import utils
-from .tasks import confirm_user_registration, email_prefix
+from .tasks import (
+    confirm_user_registration,
+    reset_user_password,
+    email_prefix,
+    confirm_prefix,
+    reset_prefix)
 from src.app.base.schemas import Msg
 from src.app.users.schemas import UserIn, UserInSocial
 from src.app.users.services import users_s
@@ -34,19 +40,17 @@ async def user_registration(user: UserIn, task: BackgroundTasks):
     return {'msg': 'successfully registered'}
 
 
-@router.get('/register/confirm/{uuid}', response_model=Msg)
+@router.get('/register/confirm/{uuid}',
+            response_model=Msg,
+            responses={400: {'description': 'Wrong or outdated uuid'}})
 async def user_registration_confirm(uuid: str):
-    redis_instance = await Redis(host=settings.REDIS_HOST,
-                                 password=settings.REDIS_PASSWORD,
-                                 db=settings.REDIS_DB).get_instance()
-    email = await redis_instance.get(f'{email_prefix}:{uuid}', encoding='utf-8')
-    await redis_instance.delete(f'{email_prefix}:{uuid}')
-    if email:
-        user = await users_s.get_obj(email=email)
-        await user.activate()
-        return {'msg': 'email confirmed'}
-    else:
-        return {'msg': 'something went wrong with email confirmation'}
+    email = await redis_pop_email(f'{email_prefix}:{confirm_prefix}:{uuid}')
+    if not email:
+        raise HTTPException(status_code=400, detail='Bad uuid')
+
+    user = await users_s.get_obj(email=email)
+    await user.activate()
+    return {'msg': 'email confirmed'}
 
 
 @router.post('/login/access-token',
@@ -58,6 +62,33 @@ async def user_token_login(response: Response,
         raise HTTPException(status_code=400, detail='Incorrect username or password')
     response.set_cookie('refresh_token', create_refresh_token())
     return create_token(user.email)
+
+
+@router.post('/password-recovery',
+             response_model=Msg,
+             responses={404: {'description': 'User not found'}})
+async def user_recover_password(task: BackgroundTasks, email: str = Body(..., embed=True)):
+    user = users_s.get_obj(email=email)
+    if user:
+        await reset_user_password(email, task)
+    else:
+        raise HTTPException(status_code=404, detail='User with such email not found')
+
+    return {'msg': 'recovery email sent'}
+
+
+@router.post('/reset-password',
+             response_model=Msg,
+             responses={400: {'description': 'Wrong or outdated uuid'}})
+async def reset_password(uuid: str = Body(...), password: str = Body(...)):
+    email = await redis_pop_email(f'{email_prefix}:{reset_prefix}:{uuid}')
+    if not email:
+        raise HTTPException(status_code=400, detail='Bad uuid')
+
+    user = await users_s.get_obj(email=email)
+    await users_s.set_password(user=user,
+                               password=password)
+    return {'msg': 'password reset successfully'}
 
 
 @router.get('/refresh',
