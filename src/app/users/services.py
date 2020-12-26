@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 from src.app.base.services import BaseService
 from . import schemas
@@ -38,6 +38,12 @@ class UsersService(BaseService):
         if not user.verify_password(password):
             return None
         return user
+
+    async def set_password(self, password: str, user: Optional[User] = None, **kwargs):
+        if not user:
+            user = await self.model.filter(**kwargs)
+        user.set_password(password)
+        await user.save()
 
 
 class UsersServiceAdmin(UsersService):
