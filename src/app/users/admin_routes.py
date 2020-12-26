@@ -4,7 +4,7 @@ from fastapi_pagination.params import resolve_params
 
 from .filters import UserAdminFilter
 from .models import User
-from .schemas import UserIn, UserOutAdmin
+from .schemas import UserOutAdmin, UserInAdmin
 from .services import users_s, users_s_admin
 from ..auth.permissions import get_superuser
 
@@ -39,12 +39,12 @@ async def delete_user(pk: int, user: User = Depends(get_superuser)):
 
 @admin_router.put('/{pk}')
 async def update_user(pk: int,
-                      user_data: UserIn,
+                      user_data: UserInAdmin,
                       user: User = Depends(get_superuser)):
     return await users_s.update(user_data, id=pk)
 
 
 @admin_router.post('/')
-async def create_user(user_data: UserIn,
+async def create_user(user_data: UserInAdmin,
                       user: User = Depends(get_superuser)):
     return await users_s.create(user_data)
