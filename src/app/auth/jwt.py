@@ -5,7 +5,7 @@ from jose import jwt, JWTError
 from starlette.requests import Request
 from starlette.responses import Response
 
-from src.app.auth.permissions import get_current_user
+from src.app.auth.permissions import user_for_refresh
 from src.app.auth.schemas import TokenPayload
 from src.conf import settings
 
@@ -53,7 +53,7 @@ def create_refresh_token(*, data: dict, expire_delta: timedelta = None):
 
 
 def refresh_token_dependency(
-    request: Request, response: Response, user=Depends(get_current_user)
+    request: Request, response: Response, user=Depends(user_for_refresh)
 ):
     token = request.cookies.get("refresh_token", None)
 

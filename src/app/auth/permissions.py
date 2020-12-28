@@ -25,6 +25,23 @@ async def get_current_user(token: str = Security(oauth2_scheme)):
     return user
 
 
+async def user_for_refresh(token: str = Security(oauth2_scheme)):
+    try:
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM],
+            options={"verify_exp": False},
+        )
+        token_data = TokenPayload(**payload)
+    except JWTError:
+        raise HTTPException(status_code=403, detail="Could not validate credentials")
+    user = await users_s.get_obj(email=token_data.email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
 async def get_superuser(user: User = Depends(get_current_user)):
     if user.is_superuser:
         return user
