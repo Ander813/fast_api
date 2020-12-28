@@ -9,7 +9,8 @@ from ..users.services import users_s
 from ...conf import settings
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl='/api/v1/auth/login/access-token'
+    tokenUrl='/api/v1/auth/login/access-token',
+    scheme_name='token_auth'
 )
 
 
