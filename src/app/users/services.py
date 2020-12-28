@@ -1,5 +1,7 @@
 from typing import Union, Optional
 
+from tortoise.exceptions import DoesNotExist
+
 from src.app.base.services import BaseService
 from . import schemas
 from .models import User
@@ -32,8 +34,9 @@ class UsersService(BaseService):
         return await self.create_social(defaults), True
 
     async def authenticate(self, email: str, password: str) -> Union[User, None]:
-        user = await self.model.get(email=email)
-        if not user:
+        try:
+            user = await self.model.get(email=email)
+        except DoesNotExist:
             return None
         if not user.verify_password(password):
             return None
@@ -52,5 +55,3 @@ class UsersServiceAdmin(UsersService):
 
 users_s = UsersService()
 users_s_admin = UsersServiceAdmin()
-
-
