@@ -6,8 +6,7 @@ from starlette.responses import Response
 from tortoise.exceptions import IntegrityError
 
 from .email import redis_pop_email
-from .jwt import create_token
-from .permissions import get_current_user
+from .jwt import create_token, refresh_token_dependency
 from .schemas import Token
 from .social_auth.social_auth import oauth
 from .social_auth import utils
@@ -115,19 +114,12 @@ async def reset_password(uuid: str = Body(...), password: str = Body(...)):
     return {"msg": "password reset successfully"}
 
 
-@router.post("/refresh", response_model=Token, dependencies=[Depends(validate_csrf)])
-async def user_token_refresh(
-    request: Request, response: Response, user: User = Depends(get_current_user)
-):
-    refresh_token = request.cookies.get("refresh_token", None)
-    if refresh_token:
-        response.set_cookie(
-            "refresh_token",
-            create_token(email=user.email, refresh=True)["refresh_token"],
-            httponly=True,
-        )
-    else:
-        return HTTPException(status_code=401, detail="Unauthorized")
+@router.post(
+    "/refresh",
+    response_model=Token,
+    dependencies=[Depends(validate_csrf)],
+)
+async def user_token_refresh(user: User = Depends(refresh_token_dependency)):
     return create_token(user.email)
 
 
