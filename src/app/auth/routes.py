@@ -117,13 +117,13 @@ async def reset_password(uuid: str = Body(...), password: str = Body(...)):
 @router.post(
     "/refresh",
     response_model=Token,
-    dependencies=[Depends(validate_csrf)],
+    dependencies=[Depends(validate_csrf), Depends(ensure_csrf)],
 )
 async def user_token_refresh(user: User = Depends(refresh_token_dependency)):
     return create_token(user.email)
 
 
-@router.get("/login/vk", dependencies=[Depends(ensure_csrf)])
+@router.get("/login/vk")
 async def vk_login(request: Request):
     redirect_uri = request.url_for("vk_auth")
     return await oauth.vk.authorize_redirect(request, redirect_uri)
@@ -143,7 +143,7 @@ async def vk_auth(request: Request, response: Response):
     return create_token(user.email)
 
 
-@router.get("/login/git", dependencies=[Depends(ensure_csrf)])
+@router.get("/login/git")
 async def git_login(request: Request):
     redirect_uri = request.url_for("git_auth")
     return await oauth.github.authorize_redirect(request, redirect_uri)
