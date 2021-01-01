@@ -6,10 +6,14 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 from src.app.auth.permissions import user_for_refresh
 =======
 from src.app.auth.permissions import get_current_user
 >>>>>>> 9e87bbc... Refresh token endpoint now validates refresh token
+=======
+from src.app.auth.permissions import user_for_refresh
+>>>>>>> 24a289a... Now refresh endpoint works with expired access token
 from src.app.auth.schemas import TokenPayload
 from src.conf import settings
 
@@ -58,10 +62,14 @@ def create_refresh_token(*, data: dict, expire_delta: timedelta = None):
 
 def refresh_token_dependency(
 <<<<<<< HEAD
+<<<<<<< HEAD
     request: Request, response: Response, user=Depends(user_for_refresh)
 =======
     request: Request, response: Response, user=Depends(get_current_user)
 >>>>>>> 9e87bbc... Refresh token endpoint now validates refresh token
+=======
+    request: Request, response: Response, user=Depends(user_for_refresh)
+>>>>>>> 24a289a... Now refresh endpoint works with expired access token
 ):
     token = request.cookies.get("refresh_token", None)
 
