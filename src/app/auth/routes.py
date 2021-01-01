@@ -117,7 +117,11 @@ async def reset_password(uuid: str = Body(...), password: str = Body(...)):
 @router.post(
     "/refresh",
     response_model=Token,
+<<<<<<< HEAD
     dependencies=[Depends(validate_csrf), Depends(ensure_csrf)],
+=======
+    dependencies=[Depends(validate_csrf)],
+>>>>>>> 9e87bbc... Refresh token endpoint now validates refresh token
 )
 async def user_token_refresh(user: User = Depends(refresh_token_dependency)):
     return create_token(user.email)
