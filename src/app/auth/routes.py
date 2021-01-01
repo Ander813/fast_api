@@ -18,7 +18,6 @@ from .tasks import (
     reset_prefix,
 )
 from src.app.base.schemas import Msg
-from src.app.base.csrf import validate_csrf, ensure_csrf
 from src.app.users.schemas import UserIn, UserInSocial
 from src.app.users.services import users_s
 from ..users.models import User
@@ -28,10 +27,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/register",
-    response_model=Msg,
-    responses={400: {"Description": "bad request"}},
-    dependencies=[Depends(ensure_csrf)],
+    "/register", response_model=Msg, responses={400: {"Description": "bad request"}}
 )
 async def user_registration(
     user: UserIn,
@@ -62,9 +58,7 @@ async def user_registration_confirm(uuid: str):
     return {"msg": "email confirmed"}
 
 
-@router.post(
-    "/login/access-token", response_model=Token, dependencies=[Depends(ensure_csrf)]
-)
+@router.post("/login/access-token", response_model=Token)
 async def user_token_login(
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -84,7 +78,6 @@ async def user_token_login(
     "/password-recovery",
     response_model=Msg,
     responses={404: {"description": "User not found"}},
-    dependencies=[Depends(validate_csrf)],
 )
 async def user_recover_password(
     task: BackgroundTasks, email: str = Body(..., embed=True)
@@ -102,7 +95,6 @@ async def user_recover_password(
     "/reset-password",
     response_model=Msg,
     responses={400: {"description": "Wrong or outdated uuid"}},
-    dependencies=[Depends(validate_csrf)],
 )
 async def reset_password(uuid: str = Body(...), password: str = Body(...)):
     email = await redis_pop_email(f"{email_prefix}:{reset_prefix}:{uuid}")
@@ -114,22 +106,18 @@ async def reset_password(uuid: str = Body(...), password: str = Body(...)):
     return {"msg": "password reset successfully"}
 
 
-@router.post(
-    "/refresh",
-    response_model=Token,
-    dependencies=[Depends(validate_csrf)],
-)
+@router.post("/refresh", response_model=Token)
 async def user_token_refresh(user: User = Depends(refresh_token_dependency)):
     return create_token(user.email)
 
 
-@router.get("/login/vk", dependencies=[Depends(ensure_csrf)])
+@router.get("/login/vk")
 async def vk_login(request: Request):
     redirect_uri = request.url_for("vk_auth")
     return await oauth.vk.authorize_redirect(request, redirect_uri)
 
 
-@router.get("/vk", dependencies=[Depends(ensure_csrf)])
+@router.get("/vk")
 async def vk_auth(request: Request, response: Response):
     token = await oauth.vk.authorize_access_token(request, method="GET")
     user, _ = await users_s.get_or_create_social(
@@ -143,13 +131,13 @@ async def vk_auth(request: Request, response: Response):
     return create_token(user.email)
 
 
-@router.get("/login/git", dependencies=[Depends(ensure_csrf)])
+@router.get("/login/git")
 async def git_login(request: Request):
     redirect_uri = request.url_for("git_auth")
     return await oauth.github.authorize_redirect(request, redirect_uri)
 
 
-@router.get("/git", dependencies=[Depends(ensure_csrf)])
+@router.get("/git")
 async def git_auth(request: Request, response: Response):
     token = await oauth.github.authorize_access_token(request)
     request.session["token"] = token
