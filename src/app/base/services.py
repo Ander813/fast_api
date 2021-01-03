@@ -6,11 +6,11 @@ from tortoise.exceptions import FieldError
 
 from .filters import BaseFilter, get_filter_order_params
 
-ModelType = TypeVar('ModelType', bound=Model)
-CreateSchemaType = TypeVar('CreateSchemaType', bound=BaseModel)
-UpdateSchemaType = TypeVar('UpdateSchemaType', bound=BaseModel)
-GetSchemaType = TypeVar('GetSchemaType', bound=BaseModel)
-FilterType = TypeVar('FilterType', bound=BaseFilter)
+ModelType = TypeVar("ModelType", bound=Model)
+CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
+UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+GetSchemaType = TypeVar("GetSchemaType", bound=BaseModel)
+FilterType = TypeVar("FilterType", bound=BaseFilter)
 
 
 class BaseService:
@@ -43,7 +43,9 @@ class BaseService:
     async def get_obj(self, **kwargs) -> ModelType:
         return await self.model.get_or_none(**kwargs)
 
-    async def get_or_create(self, defaults: CreateSchemaType, **kwargs) -> GetSchemaType:
+    async def get_or_create(
+        self, defaults: CreateSchemaType, **kwargs
+    ) -> GetSchemaType:
         return await self.model.get_or_create(**kwargs, defaults=defaults.dict())
 
     async def get_slice(self, page=0, size=50, filter_obj: FilterType = None, **kwargs):
