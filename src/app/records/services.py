@@ -15,9 +15,10 @@ class RecordsService(BaseRecordService):
     get_schema = schemas.RecordOut
 
     async def update(self, schema, **kwargs):
-        await self.model.filter(**kwargs).update(**schema.dict(exclude_unset=True),
-                                                 edit_date=datetime.now())
-        return await self.get_schema.from_queryset(self.model.filter(**kwargs))
+        await self.model.filter(**kwargs).update(
+            **schema.dict(exclude_unset=True), edit_date=datetime.now()
+        )
+        return await self.get_schema.from_queryset_single(self.model.get(**kwargs))
 
 
 class RecordsServiceAdmin(BaseRecordService):
@@ -26,5 +27,3 @@ class RecordsServiceAdmin(BaseRecordService):
 
 records_s = RecordsService()
 records_s_admin = RecordsServiceAdmin()
-
-

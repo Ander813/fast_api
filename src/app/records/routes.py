@@ -42,7 +42,9 @@ async def create_record(record: RecordIn, user: User = Depends(get_current_user)
     return await records_s.create(record, creator_id=user.id)
 
 
-@router.put("/{id}", responses={404: {"description": "not found"}})
+@router.put(
+    "/{id}", response_model=RecordOut, responses={404: {"model": HTTPNotFoundError}}
+)
 async def update_record(
     id: int, record: RecordIn, user: User = Depends(get_current_user)
 ):
@@ -56,4 +58,4 @@ async def delete_record(id: int, user: User = Depends(get_current_user)):
     if await records_s.delete(id=id, creator_id=user.id):
         return {"msg": "deleted"}
     else:
-        raise HTTPException(status_code=404, detail="object not found")
+        raise HTTPException(status_code=404, detail="object does not exist")
