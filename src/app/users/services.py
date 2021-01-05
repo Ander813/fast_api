@@ -13,8 +13,8 @@ class UsersService(BaseService):
     update_schema = schemas.UserIn
     get_schema = schemas.UserOut
 
-    async def create(self, schema):
-        user_obj = await self.model.create_user(**schema.dict())
+    async def create(self, schema, **kwargs):
+        user_obj = await self.model.create_user(**schema.dict(), **kwargs)
         return await self.get_schema.from_tortoise_orm(user_obj)
 
     async def get_or_create(self, defaults, **kwargs):
@@ -22,6 +22,10 @@ class UsersService(BaseService):
         if user_obj:
             return await self.get_schema.from_tortoise_orm(user_obj), False
         return await self.create(defaults), True
+
+    async def create_superuser(self, schema):
+        user_obj = await self.model.create_superuser(**schema.dict())
+        return await self.get_schema.from_tortoise_orm(user_obj)
 
     async def create_social(self, schema):
         user_obj = await self.model.create_social_user(**schema.dict())
