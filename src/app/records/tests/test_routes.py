@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime
 
+from fastapi_pagination import Page
 from httpx import AsyncClient
 from tortoise.contrib.test import initializer, finalizer
 
@@ -66,11 +67,8 @@ async def test_post_record_authorized():
 
     json_resp = json.loads(response.content)
 
-    assert json_resp.get("id", None)
-    assert json_resp.get("name", None)
-    assert json_resp.get("is_important", None) is records[0].is_important
-    assert json_resp.get("create_date", None)
-    assert json_resp.get("edit_date", None)
+    for key in RecordOut.__fields__:
+        assert key in json_resp
 
 
 @pytest.mark.asyncio()
@@ -90,14 +88,11 @@ async def test_get_records_authorized():
     assert response.status_code == 200
 
     json_resp = json.loads(response.content)
-    assert json_resp.get("items", None)
-    assert type(json_resp["items"]) is list
+    for key in Page.__fields__:
+        assert key in json_resp
     assert len(json_resp["items"]) == len(records)
     for key in RecordOut.__fields__:
         assert key in json_resp["items"][0]
-    assert json_resp.get("total", None)
-    assert json_resp.get("page", None) == 0
-    assert json_resp.get("size", None)
 
 
 @pytest.mark.asyncio()
