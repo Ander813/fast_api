@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from tortoise.contrib.test import initializer, finalizer
 
 from src.app.auth.jwt import create_token
-from src.app.records.schemas import RecordIn, RecordOut
+from src.app.records.schemas import RecordIn, RecordOut, RecordOutAdmin
 from src.app.records.services import records_s
 from src.app.users.schemas import UserIn
 from src.app.users.services import users_s
@@ -86,3 +86,150 @@ async def test_get_records_with_superuser():
     for key in Page.__fields__:
         assert key in json_resp
     assert len(json_resp["items"]) == 2 * len(records)
+
+
+@pytest.mark.asyncio
+async def test_get_records_with_filter_params():
+    await create_superuser()
+    await create_user()
+    await create_records(id=1)
+    await create_records(id=2)
+
+    async with client as c:
+        response = await c.get(
+            app.url_path_for("admin_get_records"),
+            params={"creator_id": 2},
+            headers=superuser_authorization,
+        )
+
+    assert response.status_code == 200
+    json_resp = json.loads(response.content)
+    for i in range(len(records)):
+        assert json_resp["items"][i]["creator_id"] == 2
+
+
+@pytest.mark.asyncio
+async def test_get_record_unauthorized():
+    async with client as c:
+        response = await c.get(app.url_path_for("admin_get_record", id="1"))
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_get_record_with_common_user():
+    await create_user()
+
+    async with client as c:
+        response = await c.get(
+            app.url_path_for("admin_get_record", id="1"), headers=user_authorization
+        )
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_get_record_authorized_with_bad_id():
+    await create_superuser()
+
+    async with client as c:
+        response = await c.get(
+            app.url_path_for("admin_get_record", id="bad_id"),
+            headers=superuser_authorization,
+        )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_get_record_authorized_with_wrong_id():
+    await create_superuser()
+
+    async with client as c:
+        response = await c.get(
+            app.url_path_for("admin_get_record", id=len(records) + 1),
+            headers=superuser_authorization,
+        )
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_record_authorized():
+    await create_superuser()
+    await create_records(id=1)
+
+    async with client as c:
+        response = await c.get(
+            app.url_path_for("admin_get_record", id="1"),
+            headers=superuser_authorization,
+        )
+    assert response.status_code == 200
+    json_resp = json.loads(response.content)
+    for key in RecordOutAdmin.__fields__:
+        assert key in json_resp
+    assert json_resp["id"] == 1
+
+
+@pytest.mark.asyncio
+async def test_create_record_unauthorized():
+    async with client as c:
+        response = await c.post(app.url_path_for("admin_create_record"))
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_create_record_with_common_user():
+    await create_user()
+
+    async with client as c:
+        response = await c.post(
+            app.url_path_for("admin_create_record"),
+            headers=user_authorization,
+        )
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_create_record_authorized():
+    await create_superuser()
+
+    async with client as c:
+        response = await c.post(
+            app.url_path_for("admin_create_record"),
+            data=records[0].json(),
+            headers=superuser_authorization,
+        )
+    assert response.status_code == 201
+    assert records_s.get_obj(id=len(records) + 1)
+
+    json_resp = json.loads(response.content)
+    for key in RecordOutAdmin.__fields__:
+        assert key in json_resp
+
+
+@pytest.mark.asyncio
+async def test_update_record_unauthorized():
+    async with client as c:
+        response = await c.put(app.url_path_for("admin_update_record", id="1"))
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_update_record_with_common_user():
+    await create_user()
+
+    async with client as c:
+        response = await c.put(
+            app.url_path_for("admin_update_record", id="1"),
+            headers=user_authorization,
+        )
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_update_record_authorized_with_bad_id():
+    await create_superuser()
+
+    async with client as c:
+        response = await c.put(
+            app.url_path_for("admin_update_record", id="bad_id"),
+            headers=superuser_authorization,
+        )
+    assert response.status_code == 422
