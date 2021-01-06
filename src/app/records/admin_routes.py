@@ -48,18 +48,18 @@ async def admin_create_record(record: RecordIn, user: User = Depends(get_superus
     return await records_s_admin.create(record, creator_id=user.id)
 
 
-@admin_router.put("/{pk}", responses={404: {"Description": "not found"}})
+@admin_router.put("/{id}", responses={404: {"description": "not found"}})
 async def admin_update_record(
-    pk: int, record: RecordInAdmin, user: User = Depends(get_superuser)
+    id: int, record: RecordInAdmin, user: User = Depends(get_superuser)
 ):
-    return await records_s_admin.update(record, id=pk)
+    return await records_s_admin.update(record, id=id)
 
 
 @admin_router.delete(
-    "/{pk}", response_model=Msg, responses={404: {"Description": "not found"}}
+    "/{id}", response_model=Msg, responses={404: {"description": "not found"}}
 )
-async def admin_delete_record(pk: int, user: User = Depends(get_superuser)):
-    if await records_s_admin.delete(id=pk):
+async def admin_delete_record(id: int, user: User = Depends(get_superuser)):
+    if await records_s_admin.delete(id=id):
         return {"msg": "deleted"}
     else:
         raise HTTPException(status_code=404, detail="object not found")

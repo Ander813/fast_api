@@ -27,7 +27,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/register", response_model=Msg, responses={400: {"Description": "bad request"}}
+    "/register", response_model=Msg, responses={400: {"description": "bad request"}}
 )
 async def user_registration(
     user: UserIn,
