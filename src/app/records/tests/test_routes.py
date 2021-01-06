@@ -64,9 +64,9 @@ async def test_post_record_authorized():
             headers=authorization,
         )
     assert response.status_code == 201
+    assert records_s.get_obj(id=len(records) + 1)
 
     json_resp = json.loads(response.content)
-
     for key in RecordOut.__fields__:
         assert key in json_resp
 
@@ -207,7 +207,6 @@ async def test_get_record_unauthorized():
 @pytest.mark.asyncio()
 async def test_get_record_authorized_with_bad_id():
     await create_user()
-    await create_records(id=1)
 
     async with client as c:
         response = await c.get(
@@ -219,7 +218,6 @@ async def test_get_record_authorized_with_bad_id():
 @pytest.mark.asyncio()
 async def test_get_record_authorized_with_wrong_id():
     await create_user()
-    await create_records(id=1)
 
     async with client as c:
         response = await c.get(
@@ -256,11 +254,10 @@ async def test_update_record_unauthorized():
 @pytest.mark.asyncio()
 async def test_update_record_authorized_with_bad_id():
     await create_user()
-    await create_records(id=1)
 
     async with client as c:
         response = await c.put(
-            app.url_path_for("update_record", id="dab_id"),
+            app.url_path_for("update_record", id="bad_id"),
             data=records[1].json(),
             headers=authorization,
         )
@@ -270,7 +267,6 @@ async def test_update_record_authorized_with_bad_id():
 @pytest.mark.asyncio()
 async def test_update_record_authorized_with_wrong_id():
     await create_user()
-    await create_records(id=1)
 
     async with client as c:
         response = await c.put(
@@ -310,7 +306,6 @@ async def test_delete_record_unauthorized():
 @pytest.mark.asyncio()
 async def test_delete_record_authorized_with_bad_id():
     await create_user()
-    await create_records(id=1)
 
     async with client as c:
         response = await c.delete(
@@ -322,7 +317,6 @@ async def test_delete_record_authorized_with_bad_id():
 @pytest.mark.asyncio()
 async def test_delete_record_authorized_with_wrong_id():
     await create_user()
-    await create_records(id=1)
 
     async with client as c:
         response = await c.delete(
