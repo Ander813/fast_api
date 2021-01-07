@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from tortoise.contrib.test import initializer, finalizer
 
 from src.app.auth.jwt import create_token
-from src.app.records.schemas import RecordIn, RecordOut, RecordOutAdmin
+from src.app.records.schemas import RecordIn, RecordOut, RecordOutAdmin, RecordInAdmin
 from src.app.records.services import records_s
 from src.app.users.schemas import UserIn
 from src.app.users.services import users_s
@@ -197,7 +197,7 @@ async def test_create_record_authorized():
             headers=superuser_authorization,
         )
     assert response.status_code == 201
-    assert records_s.get_obj(id=len(records) + 1)
+    assert await records_s.get_obj(id=1)
 
     json_resp = json.loads(response.content)
     for key in RecordOutAdmin.__fields__:
@@ -233,3 +233,100 @@ async def test_update_record_authorized_with_bad_id():
             headers=superuser_authorization,
         )
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_record_authorized_with_wrong_id():
+    await create_superuser()
+    await create_user()
+    await create_records(id=1)
+
+    record_in = RecordInAdmin(**records[0].dict(), creator_id=2)
+
+    async with client as c:
+        response = await c.put(
+            app.url_path_for("admin_update_record", id=len(records) + 1),
+            data=record_in.json(),
+            headers=superuser_authorization,
+        )
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_update_record_authorized():
+    await create_superuser()
+    await create_user()
+    await create_records(id=1)
+
+    record_in = RecordInAdmin(**records[0].dict(), creator_id=2)
+
+    async with client as c:
+        response = await c.put(
+            app.url_path_for("admin_update_record", id="1"),
+            data=record_in.json(),
+            headers=superuser_authorization,
+        )
+    assert response.status_code == 200
+    assert await records_s.filter(creator_id=2)
+
+    json_resp = json.loads(response.content)
+    for key in RecordOutAdmin.__fields__:
+        assert key in json_resp
+
+
+@pytest.mark.asyncio
+async def test_delete_record_unauthorized():
+    async with client as c:
+        response = await c.delete(app.url_path_for("admin_delete_record", id="1"))
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_delete_record_with_common_user():
+    await create_user()
+
+    async with client as c:
+        response = await c.delete(
+            app.url_path_for("admin_delete_record", id="1"), headers=user_authorization
+        )
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_delete_record_with_bad_id():
+    await create_superuser()
+
+    async with client as c:
+        response = await c.delete(
+            app.url_path_for("admin_delete_record", id="bad_id"),
+            headers=superuser_authorization,
+        )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_delete_record_with_wrong_id():
+    await create_superuser()
+    await create_records(id=1)
+
+    async with client as c:
+        response = await c.delete(
+            app.url_path_for("admin_delete_record", id=len(records) + 1),
+            headers=superuser_authorization,
+        )
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_delete_record_authorized():
+    await create_superuser()
+    await create_user()
+    await create_records(id=2)
+
+    async with client as c:
+        response = await c.delete(
+            app.url_path_for("admin_delete_record", id="1"),
+            headers=superuser_authorization,
+        )
+    assert response.status_code == 200
+    assert await records_s.get_obj(id=1) is None
