@@ -28,8 +28,8 @@ class BaseService:
         return await self.get_schema.from_queryset(self.model.filter(**kwargs))
 
     async def delete(self, **kwargs):
-        obj = await self.model.filter(**kwargs).delete()
-        return obj
+        deleted = await self.model.filter(**kwargs).delete()
+        return deleted
 
     async def get(self, **kwargs) -> GetSchemaType:
         return await self.get_schema.from_queryset_single(self.model.get(**kwargs))
