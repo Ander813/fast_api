@@ -49,12 +49,12 @@ class BaseService:
         return await self.model.get_or_create(**kwargs, defaults=defaults.dict())
 
     async def get_slice(self, page=0, size=50, filter_obj: FilterType = None, **kwargs):
-        if filter_obj:
+        if filter_obj or kwargs:
             queryset = await self.filter_queryset(filter_obj, **kwargs)
         else:
             queryset = self.model.all()
 
-        if queryset is not None:
+        if queryset:
             items = queryset.offset(page * size).limit(size).all()
             return await self.get_schema.from_queryset(items)
         return None

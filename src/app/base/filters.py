@@ -15,7 +15,10 @@ FilterType = TypeVar("FilterType", bound=BaseFilter)
 
 
 def get_filter_order_params(filter_obj: FilterType, extra_params: dict):
-    filter_params = {**filter_obj.dict(), **extra_params}
+    if filter_obj:
+        filter_params = {**filter_obj.dict(), **extra_params}
+    else:
+        filter_params = extra_params
     if "order" in filter_params:
         order = filter_params.pop("order")
     else:
