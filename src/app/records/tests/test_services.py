@@ -4,6 +4,7 @@ import pytest
 from tortoise.contrib.test import initializer, finalizer
 from tortoise.exceptions import DoesNotExist
 
+from src.app.records.filters import RecordFilter
 from src.app.records.models import Record
 from src.app.records.schemas import RecordIn, RecordOut
 from src.app.records.services import records_s
@@ -204,3 +205,52 @@ async def test_get_or_create_get():
     )
     assert not created
     assert isinstance(record_obj, Record)
+
+
+@pytest.mark.asyncio
+async def test_get_slice_without_kwargs():
+    await create_user()
+    await create_records(id=1)
+
+    record_schemas_list = await records_s.get_slice(size=2)
+    assert isinstance(record_schemas_list, list)
+    assert len(record_schemas_list) == 2
+    for i in range(len(records), len(records) - 2, -1):
+        assert record_schemas_list[len(records) - i].id == i
+
+
+@pytest.mark.asyncio
+async def test_get_slice_with_kwargs():
+    await create_user()
+    await create_records(id=1)
+
+    record_schemas_list = await records_s.get_slice(size=2, is_important=True)
+    assert isinstance(record_schemas_list, list)
+    assert len(record_schemas_list) == 2
+    for i in range(len(records), len(records) - 2, -1):
+        assert record_schemas_list[len(records) - i].is_important
+
+
+@pytest.mark.asyncio
+async def test_get_slice_with_filter():
+    filter_obj = RecordFilter(
+        is_important=True, date_from=None, date_to=None, order=None
+    )
+    await create_user()
+    await create_records(id=1)
+
+    record_schemas_list = await records_s.get_slice(filter_obj=filter_obj, size=2)
+    assert isinstance(record_schemas_list, list)
+    assert len(record_schemas_list) == 2
+    for i in range(len(records), len(records) - 2, -1):
+        assert record_schemas_list[len(records) - i].is_important
+
+
+@pytest.mark.asyncio
+async def test_get_slice_with_wrong_kwargs():
+    await create_user()
+    await create_records(id=1)
+
+    record_schemas_list = await records_s.get_slice(size=2, creator_id=2)
+    assert isinstance(record_schemas_list, list)
+    assert len(record_schemas_list) == 0
