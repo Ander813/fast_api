@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 import pytest
@@ -36,6 +37,13 @@ def initialize_tests(request):
     request.addfinalizer(finalizer)
 
 
+@pytest.fixture(scope="module")
+def event_loop():
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
+
+
 @pytest.mark.asyncio
 async def test_user_registration():
     async with client as c:
@@ -66,5 +74,30 @@ async def test_user_registration_with_existing_email():
         response = await c.post(
             app.url_path_for("user_registration"),
             data=user.json(),
+        )
+    assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_user_registration_confirm():
+    await create_user()
+
+    redis_instance = await Redis(
+        host=settings.REDIS_HOST, password=settings.REDIS_PASSWORD, db=settings.REDIS_DB
+    ).get_instance()
+    _, keys = await redis_instance.scan(match=f"{email_prefix}:{confirm_prefix}:*")
+    uuid = keys[0].decode("utf-8").split(":")[-1]
+
+    async with client as c:
+        response = await c.get(app.url_path_for("user_registration_confirm", uuid=uuid))
+    assert response.status_code == 200
+    assert (await User.get(id=1)).activated
+
+
+@pytest.mark.asyncio
+async def test_user_registration_confirm_with_bad_uuid():
+    async with client as c:
+        response = await c.get(
+            app.url_path_for("user_registration_confirm", uuid="bad_uuid")
         )
     assert response.status_code == 400
