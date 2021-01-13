@@ -35,11 +35,11 @@ async def user_registration(
 ):
     try:
         await users_s.create(user)
-        await confirm_user_registration(user, task)
     except IntegrityError:
         raise HTTPException(
             status_code=400, detail="User with such email address already exists"
         )
+    await confirm_user_registration(user, task)
     return {"msg": "successfully registered"}
 
 
