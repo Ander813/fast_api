@@ -82,7 +82,7 @@ async def user_token_login(
 async def user_recover_password(
     task: BackgroundTasks, email: str = Body(..., embed=True)
 ):
-    user = users_s.get_obj(email=email)
+    user = await users_s.get_obj(email=email)
     if user:
         await reset_user_password(email, task)
     else:
