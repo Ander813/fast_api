@@ -2,7 +2,7 @@ from typing import Union, Optional
 
 from tortoise.exceptions import DoesNotExist
 
-from src.app.base.services import BaseService
+from src.app.base.services import BaseService, CreateSchemaType
 from . import schemas
 from .models import User
 
@@ -17,8 +17,10 @@ class UsersService(BaseService):
         user_obj = await self.model.create_user(**schema.dict(), **kwargs)
         return await self.get_schema.from_tortoise_orm(user_obj)
 
-    async def get_or_create(self, defaults, **kwargs):
-        user_obj = await self.model.filter(**kwargs).first()
+    async def get_or_create(self, defaults: Union[dict, CreateSchemaType], **kwargs):
+        if isinstance(defaults, dict):
+            defaults = self.create_schema(**defaults)
+        user_obj = await self.model.get_or_none(**kwargs, email=defaults.email)
         if user_obj:
             return await self.get_schema.from_tortoise_orm(user_obj), False
         return await self.create(defaults), True
