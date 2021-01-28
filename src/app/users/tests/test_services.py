@@ -2,7 +2,7 @@ import pytest
 from tortoise.contrib.test import initializer, finalizer
 
 from src.app.users.models import User
-from src.app.users.schemas import UserIn, UserOut
+from src.app.users.schemas import UserIn, UserOut, UserInSocial
 from src.app.users.services import users_s
 from src.conf import settings
 
@@ -45,3 +45,22 @@ async def test_get_or_create_get():
     user, created = await users_s.get_or_create(defaults=user_schema)
     assert not created
     assert user.email == user_email
+
+
+@pytest.mark.asyncio
+async def test_create_superuser():
+    await users_s.create_superuser(user_schema)
+
+    user = await User.get_or_none(id=1)
+    assert user
+    assert user.verify_password(user_password)
+    assert user.superuser
+
+
+@pytest.mark.asyncio
+async def test_create_social():
+    await users_s.create_social(UserInSocial(user_email=user_email))
+
+    user = await User.get_or_none(id=1)
+    assert user
+    assert user.if_password_usable()
