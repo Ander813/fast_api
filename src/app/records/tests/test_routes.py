@@ -36,7 +36,7 @@ def initialize_tests(request):
 
 
 async def create_user():
-    return await users_s.create(user)
+    return await users_s.create(user, activated=True)
 
 
 async def create_records(id: int):

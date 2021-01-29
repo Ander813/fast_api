@@ -30,7 +30,7 @@ client = AsyncClient(app=app, base_url="http://test")
 
 
 async def create_user():
-    return await users_s.create(user)
+    return await users_s.create(user, activated=True)
 
 
 @pytest.fixture(autouse=True)
