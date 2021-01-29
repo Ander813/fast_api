@@ -66,6 +66,8 @@ async def user_token_login(
     user = await users_s.authenticate(form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
+    if not user.activated:
+        raise HTTPException(status_code=403, detail="Please confirm your email")
     response.set_cookie(
         "refresh_token",
         create_token(user.email, refresh=True)["refresh_token"],
