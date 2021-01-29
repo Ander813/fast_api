@@ -50,7 +50,7 @@ class UsersService(BaseService):
 
     async def set_password(self, password: str, user: Optional[User] = None, **kwargs):
         if not user:
-            user = await self.model.filter(**kwargs)
+            user = await self.model.get(**kwargs)
         user.set_password(password)
         await user.save()
 
