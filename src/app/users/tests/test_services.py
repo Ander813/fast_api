@@ -59,8 +59,56 @@ async def test_create_superuser():
 
 @pytest.mark.asyncio
 async def test_create_social():
-    await users_s.create_social(UserInSocial(user_email=user_email))
+    await users_s.create_social(UserInSocial(email=user_email))
 
     user = await User.get_or_none(id=1)
     assert user
-    assert user.if_password_usable()
+    assert not user.if_password_usable()
+
+
+@pytest.mark.asyncio
+async def test_get_or_create_social_create():
+    user, created = await users_s.get_or_create_social(
+        UserInSocial(email=user_email), email=user_email
+    )
+
+    assert isinstance(user, UserOut)
+    assert created
+    user_obj = await User.get_or_none(id=1)
+    assert user_obj
+    assert not user_obj.if_password_usable()
+
+
+@pytest.mark.asyncio
+async def test_get_or_create_social_get():
+    await users_s.create_social(UserInSocial(email=user_email))
+
+    user, created = await users_s.get_or_create_social(
+        UserInSocial(email=user_email), email=user_email
+    )
+
+    assert isinstance(user, UserOut)
+    assert not created
+    user_obj = await User.get_or_none(id=1)
+    assert user_obj
+    assert not user_obj.if_password_usable()
+
+
+@pytest.mark.asyncio
+async def test_authenticate_with_wrong_credentials():
+    assert not await users_s.authenticate("wrong_email@mail.ru", "wrong_password")
+
+
+@pytest.mark.asyncio
+async def test_authenticate():
+    await users_s.create(user_schema)
+    assert await users_s.authenticate(user_email, user_password)
+
+
+@pytest.mark.asyncio
+async def test_set_password():
+    await users_s.create(user_schema)
+    await users_s.set_password("test1234", id=1)
+
+    user_obj = await User.get_or_none(id=1)
+    assert user_obj.verify_password("test1234")
