@@ -11,7 +11,7 @@ oauth2_scheme = OAuth2PasswordBearer(
 )
 
 
-async def get_current_user(token: str = Security(oauth2_scheme)):
+async def get_user(token: str = Security(oauth2_scheme)):
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
@@ -23,6 +23,13 @@ async def get_current_user(token: str = Security(oauth2_scheme)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+
+async def get_current_user(user: User = Depends(get_user)):
+    if user.activated:
+        return user
+    else:
+        raise HTTPException(status_code=403, detail="Please confirm your email")
 
 
 async def user_for_refresh(token: str = Security(oauth2_scheme)):
