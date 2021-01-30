@@ -18,7 +18,7 @@ from .tasks import (
     reset_prefix,
 )
 from src.app.base.schemas import Msg
-from src.app.users.schemas import UserIn, UserInSocial
+from src.app.users.schemas import UserIn, UserInSocial, ResetPasswordSchema
 from src.app.users.services import users_s
 from ..users.models import User
 
@@ -98,13 +98,15 @@ async def user_recover_password(
     response_model=Msg,
     responses={400: {"description": "Wrong or outdated uuid"}},
 )
-async def reset_password(uuid: str = Body(...), password: str = Body(...)):
-    email = await redis_pop_email(f"{email_prefix}:{reset_prefix}:{uuid}")
+async def reset_password(password_schema: ResetPasswordSchema):
+    email = await redis_pop_email(
+        f"{email_prefix}:{reset_prefix}:{password_schema.uuid}"
+    )
     if not email:
         raise HTTPException(status_code=400, detail="Bad uuid")
 
     user = await users_s.get_obj(email=email)
-    await users_s.set_password(user=user, password=password)
+    await users_s.set_password(user=user, password=password_schema.password)
     return {"msg": "password reset successfully"}
 
 
