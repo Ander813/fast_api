@@ -17,7 +17,7 @@ from src.conf import settings
 
 
 user_email = "test@mail.ru"
-user_password = "12345"
+user_password = "Test1234"
 user = UserIn(email=user_email, password=user_password)
 token = create_token(user_email)
 refresh_token = create_token(user_email, refresh=True)["refresh_token"]
@@ -215,11 +215,11 @@ async def test_reset_password():
     async with client as c:
         response = await c.post(
             app.url_path_for("reset_password"),
-            json={"uuid": uuid, "password": "new_password"},
+            json={"uuid": uuid, "password": "New_password1"},
         )
     assert response.status_code == 200
     user_obj = await User.get(id=1)
-    assert user_obj.verify_password("new_password")
+    assert user_obj.verify_password("New_password1")
 
 
 @pytest.mark.asyncio
@@ -227,6 +227,6 @@ async def test_reset_password_with_wrong_uuid():
     async with client as c:
         response = await c.post(
             app.url_path_for("reset_password"),
-            json={"uuid": "wrong_uuid", "password": "new_password"},
+            json={"uuid": "wrong_uuid", "password": "New_password1"},
         )
     assert response.status_code == 400

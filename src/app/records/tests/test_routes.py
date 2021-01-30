@@ -17,7 +17,7 @@ import pytest
 
 
 user_email = "test@mail.ru"
-user_password = "12345"
+user_password = "Test1234"
 user = UserIn(email=user_email, password=user_password)
 token = create_token(user_email)
 authorization = {"Authorization": f"Bearer {token['access_token']}"}

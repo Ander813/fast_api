@@ -8,7 +8,7 @@ from src.conf import settings
 
 
 user_email = "test@mail.ru"
-user_password = "12345"
+user_password = "Test1234"
 user_schema = UserIn(email=user_email, password=user_password)
 
 

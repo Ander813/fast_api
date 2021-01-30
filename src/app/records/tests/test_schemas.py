@@ -11,7 +11,7 @@ from src.conf import settings
 
 
 user_email = "test@mail.ru"
-user_password = "12345"
+user_password = "Test1234"
 user = UserIn(email=user_email, password=user_password)
 record_in_data = {"name": "name1", "text": "text1", "is_important": True}
 record_in_admin_data = {**record_in_data, **{"creator_id": 1}}

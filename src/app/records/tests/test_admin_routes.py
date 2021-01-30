@@ -17,7 +17,7 @@ import pytest
 
 
 superuser_email, user_email = "test@mail.ru", "test2@mail.ru"
-superuser_password = user_password = "12345"
+superuser_password = user_password = "Test1234"
 superuser = UserIn(email=superuser_email, password=superuser_password)
 user = UserIn(email=user_email, password=user_password)
 superuser_token = create_token(superuser_email)
