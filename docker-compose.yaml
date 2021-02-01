@@ -6,12 +6,30 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-      target: dev
     env_file:
-      - .env
+      - src/conf/.env
     command: uvicorn main:app --reload --port 80 --host 0.0.0.0
     ports:
       - 8080:80
     restart: always
-
-
+    depends_on:
+      - redis
+      - db
+  redis:
+    container_name: simple_diary_redis
+    image: redis:6.2-rc
+    ports:
+    - 6379:6379
+    restart: always
+    volumes:
+    - ./data/redis:/redis
+  db:
+    container_name: simple_diary_postgres
+    image: postgres
+    env_file:
+      - src/conf/postgres.env
+    volumes:
+    - ./data/postgres:/postgres
+    ports:
+    - 5432:5432
+    restart: always
