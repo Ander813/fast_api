@@ -1,5 +1,4 @@
 # How to run this project
-___
 + *git clone https://github.com/Ander813/fast_api.git*
 ___
 + Create .env and postgres.env files in conf folder
@@ -29,4 +28,10 @@ ___
     POSTGRES_DB
     
 ___
-+ run *docker-compose up*
++ *docker-compose build*
++ *docker-compose up*
+---
+## How to make migrations
++ *docker exec -it back aerich init-db*
++ *docker exec -it back migrate*
++ *docker exec -it back upgrade*
