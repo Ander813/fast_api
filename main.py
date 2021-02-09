@@ -7,7 +7,15 @@ from src.conf.middleware import middleware
 from src.conf.exceptions import exceptions
 
 
-app = FastAPI(middleware=middleware, exception_handlers=exceptions)
+if settings.DEBUG:
+    app = FastAPI(middleware=middleware, exception_handlers=exceptions)
+else:
+    app = FastAPI(
+        middleware=middleware,
+        exception_handlers=exceptions,
+        redoc_url=None,
+        docs_url=None,
+    )
 
 app.include_router(main_router, prefix="/api/v1")
 
